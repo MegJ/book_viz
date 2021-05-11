@@ -3,27 +3,148 @@
 	<title>Data Vizualization</title>
 	<meta charset="UTF-8">
 	<script src="https://d3js.org/d3.v5.min.js"></script>
+	<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 	<link href="https://fonts.googleapis.com/css?family=Inconsolata&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Montserrat:200,200i&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="general.css">
 	<script type="text/javascript" src="vis/courses_viz.js"></script>
 
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-amber.min.css" />
+    <style type="text/css">
+
+        body {
+            width:100%
+        }
+
+        .centered {
+            display: table;
+            margin: 20px auto;
+        }
+
+        .graph {
+            width: 50%;
+            margin: 0 auto;
+        }
+
+        #checkboxes > * {
+            font-size: 14px;
+            display: inline;
+            padding-top: 3px;
+        }
+
+        .measure-group {
+            display:inline;
+        }
+
+        .scale-group {
+            padding-left: 40px;
+            display:inline;
+        }
+
+        button {
+            margin:0 auto;
+            display:block;
+        }
+
+        .measure, .scale {
+        }
+
+        svg {
+            background-color: white;
+        }
+
+        .cells path {
+            fill: none;
+            pointer-events: all;
+        }
+
+        div.tooltip {
+            position: absolute;
+            text-align: left;
+            color: white;
+            white-space: normal;
+            padding: 6px;
+            font-size: 14px;
+            background: rgb(96,125,139);
+            border: 1px solid rgb(96,125,139);
+            border-radius: 2px;
+            pointer-events: none;
+            cursor: none;
+        }
+
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: rgb(96,125,139);
+            shape-rendering: crispEdges;
+        }
+
+        .axis text {
+            font: 10px sans-serif;
+        }
+
+        .continent {}
+
+        .legend {
+            fill: rgba(0,0,0,.87);
+        }
+
+        .article {
+            position: fixed;
+            top: 20px;
+            left: 15px;
+            font-size: 35px;
+            color: rgb(96,125,139);
+        }
+
+        .article-tt {
+            font-size: 14px;
+            background: rgb(96,125,139);
+            border: 1px solid rgb(96,125,139);
+            border-radius: 2px;
+            pointer-events: none;
+        }
+
+
+    </style>
+
 </head>
 <body bgcolor = "white" style="text-align: center; margin-top: 50; color: #505050;">
 	<div style="margin: 0 auto; width: 1000;font-family: Montserrat; font-size: 40; font-weight: bold; color: #505050; text-align: center;">
-		<h4 style="text-align: center;">Why you should change your major in college</h4>
+		<h4 style="text-align: center;">Visualizing books in the english department</h4>
 
-		<h4 style="text-align: left; font-size: 20">A piece of arbitrary and probably pretentious advice: you should not trust anyone who did not change their major at least once during college.</h4>
+		<div id="checkboxes" class="centered">
+			<span style="position:relative; top: 3px">Toggle Continents:&nbsp;&nbsp;</span>
+			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+				<input type="checkbox" value="africa" class="mdl-checkbox__input continent" checked="">Africa
+				<span class="mdl-checkbox__label" id="africaColor" style="font-size: 20px; color: #1976D2;">&#9679;&nbsp;&nbsp;</span>
+			</label>
+			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+				<input type="checkbox" value="northAmerica" class="mdl-checkbox__input continent" checked="">North America
+				<span class="mdl-checkbox__label" id="northAmericaColor" style="font-size: 20px; color: #388E3C;">&#9679;&nbsp;&nbsp;</span>
+			</label>
+			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+				<input type="checkbox" value="southAmerica" class="mdl-checkbox__input continent" checked="">South America
+				<span class="mdl-checkbox__label" id="southAmericaColor" style="font-size: 20px; color: #E64A19;">&#9679;&nbsp;&nbsp;</span>
+			</label>
+			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+				<input type="checkbox" value="asia" class="mdl-checkbox__input continent" checked="">Asia
+				<span class="mdl-checkbox__label" id="asiaColor" style="font-size: 20px; color: #D81B60;">&#9679;&nbsp;&nbsp;</span>
+			</label>
+			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+				<input type="checkbox" value="europe" class="mdl-checkbox__input continent" checked="">Europe
+				<span class="mdl-checkbox__label" id="europeColor" style="font-size: 20px; color: #FBC02D;">&#9679;&nbsp;&nbsp;</span>
+			</label>
+			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
+				<input type="checkbox" value="oceania" class="mdl-checkbox__input continent" checked="">Oceania
+				<span class="mdl-checkbox__label" id="oceaniaColor" style="font-size: 20px; color: #455A64;">&#9679;&nbsp;&nbsp;</span>
+			</label>
+		</div>
+		<svg height="500" width="800" class="bookViz"></svg>
 
-		<h4 style="text-align: left; font-size: 20">This might seem biased because I have, at various points during my college career, had six different majors and minors.  My first intended major was Mechanical Engineering, which I stuck to for 3-4 weeks during my freshman year.  Then I switched my major to Computer Science.  For fun, I added a creative writing minor, which became an English minor, which finally became an English major. This is a visualization of all the classes I took during my time at Cornell:</h4>
 
-		<svg height="1150" width="1500" class="courseViz"></svg>
 
-		<h4 style="text-align: left; font-size: 20">I am finishing Cornell this Spring with majors in English and Computer Science and a minor in creative writing (my minors in Portuguese and Medieval studies did not make the cut). </h4>
-
-		<h4 style="text-align: left; font-size: 20">No one can know what they want to do with their life at 18. I do not even think anyone can really know at 22.  I thought I knew exactly what I wanted to do with my life when I was writing my college application essays, but now, at 22, I have less of an idea of what my future looks like than I did at 17.</h4>
-
-		<h4 style="text-align: left; font-size: 20">And that’s ok.  What I do know is that during my time at Cornell I took many interesting classes, spent an amazing semester studying abroad, and somehow even ended up with a job after graduation.  So even though picking a major seems like a monumental decision, your major will end up being less important than you think it is. </h4>
 
 	
 	</div>
@@ -38,7 +159,7 @@
 			Promise.all([
 				d3.csv("courses.csv")
 			]).then(function(files) {
-				drawCoursesChart(".courseViz", files[0])
+				drawCoursesChart(".bookViz")
 			})
 		}
 		requestData();

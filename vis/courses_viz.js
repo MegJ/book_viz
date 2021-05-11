@@ -1,515 +1,236 @@
-function  drawCoursesChart(svgClass, classes_data) {
-    let innerRadius = 300;
-    let outerRadius = 500;
-    let svg = d3.select(svgClass);
-    let pieClass = "path_courses";
-    let yearDivisions = findYearDivisions(classes_data);
-
-    xOffset = 550;
-    yOffset = 550;
-
-    let data = classes_data
-    
-    let tooltip = addTooltipToVis("heightSvg_tooltip");
-
-
-    let colors = ["#F2A65A", "#F58549", "#EEC170", "#D496A7", "#8DF7BB", "#78E0DC", "#8EEDF7", "#A1CDF1"]
-    colors.reverse();
+function  drawCoursesChart(svgClass) {
+  console.log("hi")
+  let height = 400;
+  let width = 1000;
+  let margin = ({top: 0, right: 40, bottom: 34, left: 40});
   
-    let pie = d3.pie()
-      .value(function(d) { return d.value; })
-      .sort(null);
+  // Data structure describing chart scales
+  let Scales = {
+      lin: "scaleLinear",
+      log: "scaleLog"
+  };
   
-    let pie2 = d3.pie()
-      .value(function(d) { return d.value; })
-      .padAngle(.02)
-      .sort(null);
-
-    let radiusScale = d3.scaleSqrt()
-      .domain([0, 4])
-      .range([innerRadius, outerRadius]);
-
-    let creditsScale = d3.scaleLinear()
-      .domain([0, 4])
-      .range([60, 10])
+  // Data structure describing volume of displayed data
+  let Count = {
+      total: "total",
+      perCap: "perCapita"
+  };
   
-    let newArc = d3.arc()
-      .innerRadius(innerRadius+7.5)
-      .outerRadius(function(d){
-        let class_number = d.data.Number;
-        class_number = parseInt(class_number.substring(0, 1));
-        return radiusScale(class_number) + 20;
-      })
+  // Data structure describing legend fields value
+  let Legend = {
+      total: "Total Deaths",
+      perCap: "Per Capita Deaths"
+  };
   
-    let arc = d3.arc()
-      .innerRadius(innerRadius)
-      .outerRadius(function(d){
-        let class_number = d.data.Number;
-        class_number = parseInt(class_number.substring(0, 1));
-        return radiusScale(class_number);
-      })
-    
-    let innerArc = d3.arc()
-      .innerRadius(innerRadius - 50)
-      .outerRadius(innerRadius - 20);
-    
-    let term_arc = d3.arc()
-      .innerRadius(innerRadius - 80)
-      .outerRadius(innerRadius - 90);
-
-    //draw pie segments    
-    svg.datum(data).selectAll("." + pieClass)
-        .data(pie)
-    .enter().append("path")
-      .attr("class", pieClass)
-      .attr("id", function(d) {
-        return pieClass + "_" + parseInt(d.data.key);
-      })
-      .attr("fill", function(d) { 
-        if(d.data.Category == "Engineering Distribution"){
-          return colors[0]
-        } else if (d.data.Category == "CS") {
-          return colors[1]
-        } else if (d.data.Category == "CS distribution" ){
-          return colors[2]
-        } else if (d.data.Category == "Liberal Arts Distribution"){
-          return colors[3]
-        } else if (d.data.Category == "PE"){
-          return colors[4]
-        } else if (d.data.Category == "Arts distribution"){
-          return colors[5]
-        } else if (d.data.Category == "English"){
-          return colors[6]
-        } else if (d.data.Category == "Language"){
-          return colors[7]
-        }})
-      .attr("d", arc)
-      .attr("transform", "translate(" + xOffset + "," + yOffset + ")")
-      .on("mouseover", function(d) {
-        var name = d.data.Name;
-        d3.select(this)
-          .transition()
-          .duration(300)
-          .attr("d", newArc);
-          var tooltipText = "<b>" + d.data.Prefix + " " + d.data.Number + " " + " </br>" + name;
-   
-         updateToolTipText(tooltip, tooltipText, -20, 110);
-      })
-      .on("mouseout", function() {
-        hideTooltip(tooltip, "testing");
-
-        svg.select("." + pieClass + "_text")
-          .text("");
-
-          svg.select("." + pieClass + "_activity_text")
-          .text("");
+  let chartState = {};
   
-        d3.select(this)
-          .transition()
-          .duration(250)
-          .attr("d", arc);
+  chartState.measure = Count.total;
+  chartState.scale = Scales.lin;
+  chartState.legend = Legend.total;
+  
+  
+  // Colors used for circles depending on continent
+  let colors = d3.scaleOrdinal()
+      .domain(["asia", "africa", "northAmerica", "europe", "southAmerica", "oceania"])
+      .range(['#D81B60','#1976D2','#388E3C','#FBC02D','#E64A19','#455A64']);
+  
+  d3.select("#asiaColor").style("color", colors("asia"));
+  d3.select("#africaColor").style("color", colors("africa"));
+  d3.select("#northAmericaColor").style("color", colors("northAmerica"));
+  d3.select("#southAmericaColor").style("color", colors("southAmerica"));
+  d3.select("#europeColor").style("color", colors("europe"));
+  d3.select("#oceaniaColor").style("color", colors("oceania"));
+  
+  let svg = d3.select(svgClass)
+      .append("svg")
+      .attr("width", width)
+      .attr("height", height);
+  
+  let xScale = d3.scaleLinear()
+      .range([margin.left, width - margin.right]);
+  
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + (height - margin.bottom) + ")");
+  
+  // Create line that connects circle and X axis
+  let xLine = svg.append("line")
+      .attr("stroke", "rgb(96,125,139)")
+      .attr("stroke-dasharray", "1,2");
+  
+  // Create tooltip div and make it invisible
+  let tooltip = d3.select("#svganchor").append("div")
+      .attr("class", "tooltip")
+      .style("opacity", 0);
+  
+  // Load and process data
+  d3.csv("https://martinheinz.github.io/charts/data/who_suicide_stats.csv").then(function (data) {
+  
+      let dataSet = data;
+  
+      // Set chart domain max value to the highest total value in data set
+      xScale.domain(d3.extent(data, function (d) {
+          return +d.total;
+      }));
+  
+      redraw();
+  
+      // Listen to click on "total" and "per capita" buttons and trigger redraw when they are clicked
+      d3.selectAll(".measure").on("click", function() {
+          let thisClicked = this.value;
+          chartState.measure = thisClicked;
+          if (thisClicked === Count.total) {
+              chartState.legend = Legend.total;
+          }
+          if (thisClicked === Count.perCap) {
+              chartState.legend = Legend.perCap;
+          }
+          redraw();
       });
-
-
-  // draw year divisions
-  svg.datum(yearDivisions).selectAll("." + "yearDivisions")
-  .data(pie2)
-  .enter().append("path")
-    .attr("class", pieClass)
-    .attr("id", function(d) {
-      return "yearDivisions_" + parseInt(d.data.key);
-    })
-    .attr("transform", "translate(" + xOffset + "," + yOffset + ")")
-    .attr("fill", lightGreyColor)
-    .attr("d", term_arc);
-
-  //add year division labels
-  svg.datum(yearDivisions).selectAll("#yearDivisions_label")
-        .data(pie).enter()
-        .append('text')
-            .attr('dy', '.35em')
-            .text(function(d) { return d.data.key;})
-            .attr('transform', function(d) {
-                var pos = term_arc.centroid(d);
-                var x = pos[0];
-                var y = pos[1];
-                var hyp = Math.sqrt(x*x + y*y);
-                return 'translate(' + (xOffset + x/hyp*(innerRadius-100)) + "," + (yOffset + y/hyp*(innerRadius-100))+ ')';
-            })
-            .style('text-anchor', function(d) {
-                return (midAngle(d)) < Math.PI ? 'end' : 'start';
-            })
-            .style("font-family", "Inconsolata")
-      .style("font-weight", "bold")
-        .style("font-size", "12px");
-
-
-    //add radial lines
-      svg.datum(data).selectAll("#" + pieClass + "_label")
-      .data(pie).enter()
-        .append('path')
-          .attr('d', function(d) {
-            var pos = innerArc.centroid(d);
-            var x = pos[0];
-            var y = pos[1];
-            var hyp = Math.sqrt(x*x + y * y);
-            var startx = Math.round(xOffset + x/hyp*(innerRadius-10))
-            var starty = Math.round(yOffset + y/hyp*(innerRadius - 10))
-            var endx = Math.round(xOffset + x/hyp*(innerRadius-60))
-            var endy = Math.round(yOffset + y/hyp*(innerRadius - 60))
-            return ("M " + startx + " " + starty + "L " + endx + " " + endy)
-          })
-          .style("stroke", lightGreyColor)
-          .style("stroke-width", 2)
-          .style("fill", "none");
-
-    //add circles
-    svg.datum(data).selectAll("#" + pieClass + "_label")
-    .data(pie).enter()
-      .append('circle')
-          .attr('cx', function(d) {
-            var pos = innerArc.centroid(d);
-            var x = pos[0];
-            var y = pos[1];
-            var hyp = Math.sqrt(x*x + y * y);
-            var n = (Math.round(xOffset + x/hyp*(innerRadius-creditsScale(parseInt(d.data.credits)))));
-            return (Math.round(xOffset + x/hyp*(innerRadius-creditsScale(parseInt(d.data.credits)))));
-          })
-          .attr('cy', function(d) {
-            var pos = innerArc.centroid(d);
-            var x = pos[0];
-            var y = pos[1];
-            var hyp = Math.sqrt(x*x + y * y);
-            return (Math.round(yOffset + y/hyp*(innerRadius-creditsScale(parseInt(d.data.credits)))));
-          })
-          .attr('r', "5")
-          .attr("fill", function(d) { 
-            if(d.data.Category == "Engineering Distribution"){
-              return colors[0]
-            } else if (d.data.Category == "CS") {
-              return colors[1]
-            } else if (d.data.Category == "CS distribution" ){
-              return colors[2]
-            } else if (d.data.Category == "Liberal Arts Distribution"){
-              return colors[3]
-            } else if (d.data.Category == "PE"){
-              return colors[4]
-            } else if (d.data.Category == "Arts distribution"){
-              return colors[5]
-            } else if (d.data.Category == "English"){
-              return colors[6]
-            } else if (d.data.Category == "Language"){
-              return colors[7]
-            }})
-        .style('stroke', darkTextColor)
-        .style('stroke-width', 1);
-      
-         
-    //add class level labels
-    svg.append("text")
-        .attr("class", "political_label")
-        .attr("x", xOffset)
-        .attr("y", yOffset - outerRadius - 8)
-        .text("4000 level")
-        .style("font-family", "Inconsolata")
-        .style("alignment-baseline", "middle")
-        .style("font-weight", "bold")
-        .style("font-size", "14px");
-
-      svg.append("text")
-      .attr("class", "political_label")
-      .attr("x", xOffset)
-      .attr("y", yOffset - outerRadius + 30 - 8)
-      .text("3000 level")
-      .style("font-family", "Inconsolata")
-      .style("alignment-baseline", "middle")
-      .style("font-weight", "bold")
-      .style("font-size", "14px");
-
-      svg.append("text")
-      .attr("class", "political_label")
-      .attr("x", xOffset)
-      .attr("y", yOffset - outerRadius + 60 - 8)
-      .text("2000 level")
-      .style("font-family", "Inconsolata")
-      .style("alignment-baseline", "middle")
-      .style("font-weight", "bold")
-      .style("font-size", "14px");
-
-    svg.append("text")
-      .attr("class", "political_label")
-      .attr("x", xOffset)
-      .attr("y", yOffset - outerRadius + 100 - 8)
-      .text("1000 level")
-      .style("font-family", "Inconsolata")
-      .style("alignment-baseline", "middle")
-      .style("font-weight", "bold")
-      .style("font-size", "14px");
-
-      svg.append("circle")
-      .attr('cx', xOffset)
-      .attr('cy', yOffset)
-      .attr("r", outerRadius)
-      .attr("stroke", lightGreyColor)
-      .style("fill", "none")
-      .style('stroke-width', '5px')
-      .style('stroke-dasharray', '6, 5');
-
-
-      svg.append("circle")
-      .attr('cx', xOffset)
-      .attr('cy', yOffset)
-      .attr("r", outerRadius - 30)
-      .attr("stroke", lightGreyColor)
-      .style("fill", "none")
-      .style('stroke-width', '5px')
-      .style('stroke-dasharray', '6, 5');
-
-
-      svg.append("circle")
-      .attr('cx', xOffset)
-      .attr('cy', yOffset)
-      .attr("r", outerRadius - 60)
-      .attr("stroke", lightGreyColor)
-      .style("fill", "none")
-      .style('stroke-width', '5px')
-      .style('stroke-dasharray', '6, 5');
-
-    svg.append("circle")
-      .attr('cx', xOffset)
-      .attr('cy', yOffset)
-      .attr("r", outerRadius - 100)
-      .attr("stroke", lightGreyColor)
-      .style("fill", "none")
-      .style('stroke-width', '5px')
-      .style('stroke-dasharray', '6, 5');
-
-   //add legend
-   let labels = ["Engineering Distribution", "Computer Science", "CS Distribution",
-   "Liberal Studies", "Physical Education", "A&S Distribution", "English", "Foreign Language"
-  ]
-   svg.append("g")
-       .selectAll("year_squares")
-       .data(labels)
-       .enter()
-       .append("circle")
-       .attr("class", "year_squares")
-       .attr('id', function(d, i) { return "key_" + d;})
-       .attr("cx", xOffset + outerRadius)
-       .attr("cy", function(d, i) {return 80 + i * 30;})
-       .attr("r", 10)
-       .style("fill", function (d, i) {
-           return colors[i];
-
-       })
-       .style('stroke', darkTextColor)
-       .style('stroke-width', 2);
-   
-   //create legend labels
-   d3.select(svgClass).append("g")
-   .selectAll('.key_labels')
-   .data(labels)
-       .enter()
-       .append('text')
-       .attr('x', xOffset + outerRadius+ 20)
-       .attr('y', function(d, i) { return 90 + i*30;})
-       .text(function(d) {return d;})
-       .style('fill', darkTextColor)
-       .style("font-weight", "bold")
-       .style("font-family", "Inconsolata")
-       .style("font-size", "12px");
-
-      svg.append("text")
-       .attr("class", "political_label")
-       .attr("x", 20)
-       .attr("y", 20)
-       .text("how to read:")
-       .style('fill', darkTextColor)
-       .style("font-family", "Inconsolata")
-       .style("font-weight", "bold")
-       .style("font-family", "Inconsolata")
-       .style("font-size", "15px");
-
-       svg.append("text")
-       .attr("class", "political_label")
-       .attr("x", 0)
-       .attr("y", 70)
-       .text("# of credits")
-       .style('fill', darkTextColor)
-       .style("font-family", "Inconsolata")
-       .style("font-weight", "bold")
-       .style("font-family", "Inconsolata")
-       .style("font-size", "15px");
-
-      let credits = [1, 2, 3, 4];
-      svg.append("g")
-      .selectAll("credits_legend")
-      .data(credits)
-        .enter()
-        .append("path")
-        .attr('d', function(d) {
-            startX = 90 + 15 * d;
-            return ("M " + startX + " 40 L " + startX + " 90")})
-        .style("stroke", lightGreyColor)
-        .style("stroke-width", 2)
-        .style("fill", "none");
-
-      svg.append("g")
-      .selectAll("credits_legend")
-      .data(credits)
-        .enter()
-        .append("circle")
-        .attr('cx', function(d){
-          return (90 + 15 * d);
-        })
-        .attr('cy', function(d) {
-          return (30 + creditsScale(d));
-        })
-        .attr('r', 5)
-        .attr('fill', colors[0])
-        .style('stroke', darkTextColor)
-        .style('stroke-width', 1);
-
-      svg.append("g")
-        .selectAll("credits_legend")
-        .data(credits)
-          .enter()
-          .append("text")
-          .attr('x', function(d) {return (90 + 15 * d)})
-          .attr('y', 110)
-          .text(function(d) {return d;})
-          .style('fill', darkTextColor)
-          .style("font-weight", "bold")
-          .style("font-family", "Inconsolata")
-          .style("font-size", "12px");
-
-      svg.append("path")
-        .attr("d", "M 470 1000 L 470 1100 L 800 1100")
-        .style("stroke", darkTextColor)
-        .style("stroke-width", 3)
-        .style("fill", "none");
-      
-      svg.append("text")
-      .attr("x", 820)
-      .attr("y", 1080)
-      .text("In the fall of 2020, I studied abroad")
-      .style("font-family", "Inconsolata")
-      .style("font-weight", "bold")
-      .style("alignment-baseline", "middle")
-      .style("font-size", 16);
-
-      svg.append("text")
-      .attr("x", 820)
-      .attr("y", 1105)
-      .text("at the University of Edinburgh in Scotland.")
-      .style("font-family", "Inconsolata")
-      .style("font-weight", "bold")
-      .style("alignment-baseline", "middle")
-      .style("font-size", 16);
-
-    //add annotations
-    svg.append("path")
-    .attr("d", "M 200 930 L 150 930 L 150 1070")
-    .style("stroke", darkTextColor)
-    .style("stroke-width", 3)
-    .style("fill", "none");
-    
-    svg.append("text")
-    .attr("x", 50)
-    .attr("y", 1105)
-    .text("Transfered from Engineering to A&S")
-    .style("font-family", "Inconsolata")
-    .style("font-weight", "bold")
-    .style("alignment-baseline", "middle")
-    .style("font-size", 16);
-
-    svg.append("text")
-    .attr("x", 0)
-    .attr("y", 220)
-    .text("Added English major")
-    .style("font-family", "Inconsolata")
-    .style("font-weight", "bold")
-    .style("alignment-baseline", "middle")
-    .style("font-size", 16);
-
-    svg.append("path")
-    .attr("d", "M 90 550 L 40 550 L 40 250")
-    .style("stroke", darkTextColor)
-    .style("stroke-width", 3)
-    .style("fill", "none");
-
-    svg.append("text")
-    .attr("x", 1100)
-    .attr("y", 800)
-    .text("Added CS major")
-    .style("font-family", "Inconsolata")
-    .style("font-weight", "bold")
-    .style("alignment-baseline", "middle")
-    .style("font-size", 16);
-
-    svg.append("path")
-    .attr("d", "M 990 750 L 1150 750 L 1150 780")
-    .style("stroke", darkTextColor)
-    .style("stroke-width", 3)
-    .style("fill", "none");
-    
-
-  }
-
   
+      // Listen to click on "scale" buttons and trigger redraw when they are clicked
+      d3.selectAll(".scale").on("click", function() {
+          chartState.scale = this.value;
+          redraw(chartState.measure);
+      });
   
-  function findYearDivisions(data){
-    let term_list = [];
-    var courses_taken = 0;
-    let term = "";
-    for(var i = 0; i < data.length; i++){
-      var current_term = data[i].term;
-      if(current_term != term || i == (data.length - 1)){
-        if(courses_taken > 0){
-          term_list.push({
-            "key": term,
-            "value": courses_taken
-          })
-        }
-        courses_taken = 0
-        term = current_term
+      // Trigger filter function whenever checkbox is ticked/unticked
+      d3.selectAll("input").on("change", filter);
+  
+      function redraw() {
+  
+          // Set scale type based on button clicked
+          if (chartState.scale === Scales.lin) {
+              xScale = d3.scaleLinear().range([ margin.left, width - margin.right ])
+          }
+  
+          if (chartState.scale === Scales.log) {
+              xScale = d3.scaleLog().range([ margin.left, width - margin.right ]);
+          }
+  
+          xScale.domain(d3.extent(dataSet, function(d) {
+              return +d[chartState.measure];
+          }));
+  
+          let xAxis;
+          // Set X axis based on new scale. If chart is set to "per capita" use numbers with one decimal point
+          if (chartState.measure === Count.perCap) {
+              xAxis = d3.axisBottom(xScale)
+                  .ticks(10, ".1f")
+                  .tickSizeOuter(0);
+          }
+          else {
+              xAxis = d3.axisBottom(xScale)
+                  .ticks(10, ".1s")
+                  .tickSizeOuter(0);
+          }
+  
+          d3.transition(svg).select(".x.axis")
+              .transition()
+              .duration(1000)
+              .call(xAxis);
+  
+          // Create simulation with specified dataset
+          let simulation = d3.forceSimulation(dataSet)
+              // Apply positioning force to push nodes towards desired position along X axis
+              .force("x", d3.forceX(function(d) {
+                  // Mapping of values from total/perCapita column of dataset to range of SVG chart (<margin.left, margin.right>)
+                  return xScale(+d[chartState.measure]);  // This is the desired position
+              }).strength(2))  // Increase velocity
+              .force("y", d3.forceY((height / 2) - margin.bottom / 2))  // // Apply positioning force to push nodes towards center along Y axis
+              .force("collide", d3.forceCollide(9)) // Apply collision force with radius of 9 - keeps nodes centers 9 pixels apart
+              .stop();  // Stop simulation from starting automatically
+  
+          // Manually run simulation
+          for (let i = 0; i < dataSet.length; ++i) {
+              simulation.tick(10);
+          }
+  
+          // Create country circles
+          let countriesCircles = svg.selectAll(".countries")
+              .data(dataSet, function(d) { return d.country });
+  
+          countriesCircles.exit()
+              .transition()
+              .duration(1000)
+              .attr("cx", 0)
+              .attr("cy", (height / 2) - margin.bottom / 2)
+              .remove();
+  
+          countriesCircles.enter()
+              .append("circle")
+              .attr("class", "countries")
+              .attr("cx", 0)
+              .attr("cy", (height / 2) - margin.bottom / 2)
+              .attr("r", 6)
+              .attr("fill", function(d){ return colors(d.continent)})
+              .merge(countriesCircles)
+              .transition()
+              .duration(2000)
+              .attr("cx", function(d) { return d.x; })
+              .attr("cy", function(d) { return d.y; });
+  
+          // Show tooltip when hovering over circle (data for respective country)
+          d3.selectAll(".countries").on("mousemove", function(d) {
+              tooltip.html(`Country: <strong>${d.country}</strong><br>
+                            ${chartState.legend.slice(0, chartState.legend.indexOf(","))}: 
+                            <strong>${d3.format(",")(d[chartState.measure])}</strong>
+                            ${chartState.legend.slice(chartState.legend.lastIndexOf(" "))}`)
+                  .style('top', d3.event.pageY - 12 + 'px')
+                  .style('left', d3.event.pageX + 25 + 'px')
+                  .style("opacity", 0.9);
+  
+              xLine.attr("x1", d3.select(this).attr("cx"))
+                  .attr("y1", d3.select(this).attr("cy"))
+                  .attr("y2", (height - margin.bottom))
+                  .attr("x2",  d3.select(this).attr("cx"))
+                  .attr("opacity", 1);
+  
+          }).on("mouseout", function(_) {
+              tooltip.style("opacity", 0);
+              xLine.attr("opacity", 0);
+          });
+  
       }
-      courses_taken += 1;
-    }
-    return (term_list); 
-  }
-
-  function midAngle(d) { return d.startAngle + (d.endAngle - d.startAngle) / 2; }
-
-  /* FUNCTIONS TO HANDLE TOOLTIP FUNCTIONALITY */
-function addTooltipToVis(className) {
-  return d3.select("body")
-    .append("div")
-    .attr("class", className)
-    .style("padding", 10)
-    .style("position", "absolute")
-    .style("z-index", "10")
-    .style("visibility", "hidden")
-    .attr("white-space", "pre-line")
-    .style("background-color", "#fbfbfb")
-    .style("border-radius", "5px")
-    .style("border", "1px solid #cdcdcd");
-}
-
-function updateToolTipText(tooltip, tooltipText, topOffset, leftOffset) {
-  tooltip
-    .html(tooltipText)
-    .style("font-family", "Montserrat")
-    .style("font-size", "12px")
-    .style("visibility", "visible")
-    .style("max-width", 150)
-    .style("top", function() { return event.pageY - topOffset + "px"; })
-    .style("left", function() { return event.pageX - leftOffset +"px"; });
-}
-
-function hideTooltip(tooltip, className) {
-  tooltip.style("visibility", "hidden");
-  d3.selectAll(className).remove();
-}
   
+      // Filter data based on which checkboxes are ticked
+      function filter() {
   
+          function getCheckedBoxes(checkboxName) {
+  
+              let checkboxes = d3.selectAll(checkboxName).nodes();
+              let checkboxesChecked = [];
+              for (let i = 0; i < checkboxes.length; i++) {
+                  if (checkboxes[i].checked) {
+                      checkboxesChecked.push(checkboxes[i].defaultValue);
+                  }
+              }
+              return checkboxesChecked.length > 0 ? checkboxesChecked : null;
+          }
+  
+          let checkedBoxes = getCheckedBoxes(".continent");
+  
+          let newData = [];
+  
+          if (checkedBoxes == null) {
+              dataSet = newData;
+              redraw();
+              return;
+          }
+  
+          for (let i = 0; i < checkedBoxes.length; i++){
+              let newArray = data.filter(function(d) {
+                  return d.continent === checkedBoxes[i];
+              });
+              Array.prototype.push.apply(newData, newArray);
+          }
+  
+          dataSet = newData;
+          redraw();
+      }
+  
+  }).catch(function (error) {
+      if (error) throw error;
+  });
+    
+}
