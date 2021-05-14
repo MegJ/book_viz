@@ -35,9 +35,17 @@ function  drawCoursesChart(svgClass, books) {
   // Colors used for circles depending on continent
   let colors = d3.scaleOrdinal()
       .domain(["1000", "2000", "3000", "4000"])
-      .range(['#D81B60','#1976D2','#388E3C','#FBC02D']);
+      .range(['#C39B82','#D8BFAC','#A5A58F','#6C705E']);
   
+  var allGroup = ["gender"];
 
+  d3.select("#selectButton")
+      .selectAll('myOptions')
+     	.data(allGroup)
+      .enter()
+    	.append('option')
+      .text(function (d) { return d; }) // text showed in the menu
+      .attr("value", function (d) { return d; }) // corresponding value returned by the button
 
 //   d3.select("#color1000").style("color", colors("asia"));
 //   d3.select("#color2000").style("color", colors("\\a"));
@@ -327,16 +335,12 @@ function congregate_duplicates(books){
     non_duplicated_list = [];
     book_count = {};
     title_to_index = {}
-    console.log(books.length);
     for(let i = 0; i < books.length; i++){
         if(!(books[i].title in book_count)){
             book_count[books[i].title] = 1;
             non_duplicated_list.push(books[i])
             title_to_index[books[i].title] = non_duplicated_list.length - 1;
         } else {
-            // console.log(title_to_index);
-            // console.log(title_to_index[books[i].title])
-            // console.log("hi")
             book_count[books[i].title] += 1;
             non_duplicated_list[title_to_index[books[i].title]].course_number =  
             non_duplicated_list[title_to_index[books[i].title]].course_number + " & "+

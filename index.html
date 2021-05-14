@@ -50,9 +50,9 @@
         .measure, .scale {
         }
 
-        svg {
-            background-color: white;
-        }
+        /* svg {
+            background-color: #FBE9D8;
+        } */
 
         .cells path {
             fill: none;
@@ -110,27 +110,29 @@
     </style>
 
 </head>
-<body bgcolor = "white" style="text-align: center; margin-top: 50; color: #505050;">
-	<div style="margin: 0 auto; width: 1000;font-family: Montserrat; font-size: 40; font-weight: bold; color: #505050; text-align: center;">
+<body bgcolor = "#FBE9D8" style="text-align: center; margin-top: 50; color: #505050;">
+	<div style="margin: 0 auto; width: 800;font-family: Montserrat; font-size: 40; font-weight: bold; color: #505050; text-align: center;">
 		<h4 style="text-align: center;">Visualizing books in the english department</h4>
+        <select style="align: right" id="selectButton">Filter by... </select>
+
         <svg height="500" width="800" class="bookViz"></svg>
 		<div id="checkboxes" class="centered">
 			<span style="position:relative; top: 3px">Toggle Class Level:&nbsp;&nbsp;</span>
 			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
 				<input type="checkbox" value="1000" class="mdl-checkbox__input continent" checked="">1000 Level
-				<span class="mdl-checkbox__label" id="color1000" style="font-size: 20px; color: #D81B60;">&#9679;&nbsp;&nbsp;</span>
+				<span class="mdl-checkbox__label" id="color1000" style="font-size: 20px; color: #C39B82;">&#9679;&nbsp;&nbsp;</span>
 			</label>
 			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
 				<input type="checkbox" value="2000" class="mdl-checkbox__input continent" checked="">2000 Level
-				<span class="mdl-checkbox__label" id="color2000" style="font-size: 20px; color: #1976D2;">&#9679;&nbsp;&nbsp;</span>
+				<span class="mdl-checkbox__label" id="color2000" style="font-size: 20px; color: #D8BFAC;">&#9679;&nbsp;&nbsp;</span>
 			</label>
 			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
 				<input type="checkbox" value="3000" class="mdl-checkbox__input continent" checked="">3000 Level
-				<span class="mdl-checkbox__label" id="color3000" style="font-size: 20px; color: #388E3C;">&#9679;&nbsp;&nbsp;</span>
+				<span class="mdl-checkbox__label" id="color3000" style="font-size: 20px; color: #A5A58F;">&#9679;&nbsp;&nbsp;</span>
 			</label>
 			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
 				<input type="checkbox" value="4000" class="mdl-checkbox__input continent" checked="">4000 level
-				<span class="mdl-checkbox__label" id="color4000" style="font-size: 20px; color: #FBC02D;">&#9679;&nbsp;&nbsp;</span>
+				<span class="mdl-checkbox__label" id="color4000" style="font-size: 20px; color: #6C705E;">&#9679;&nbsp;&nbsp;</span>
 			</label>
 		</div>
 
