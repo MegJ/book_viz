@@ -1,9 +1,10 @@
-function  drawCoursesChart(svgClass) {
+function  drawCoursesChart(svgClass, books) {
   console.log("hi")
   let height = 400;
-  let width = 1000;
+  let width = 800;
   let margin = ({top: 0, right: 40, bottom: 34, left: 40});
   
+  console.log(books);
   // Data structure describing chart scales
   let Scales = {
       lin: "scaleLinear",
@@ -12,7 +13,7 @@ function  drawCoursesChart(svgClass) {
   
   // Data structure describing volume of displayed data
   let Count = {
-      total: "total",
+      total: "year",
       perCap: "perCapita"
   };
   
@@ -31,15 +32,15 @@ function  drawCoursesChart(svgClass) {
   
   // Colors used for circles depending on continent
   let colors = d3.scaleOrdinal()
-      .domain(["asia", "africa", "northAmerica", "europe", "southAmerica", "oceania"])
+      .domain(["male", "female"])
       .range(['#D81B60','#1976D2','#388E3C','#FBC02D','#E64A19','#455A64']);
   
-  d3.select("#asiaColor").style("color", colors("asia"));
-  d3.select("#africaColor").style("color", colors("africa"));
-  d3.select("#northAmericaColor").style("color", colors("northAmerica"));
-  d3.select("#southAmericaColor").style("color", colors("southAmerica"));
-  d3.select("#europeColor").style("color", colors("europe"));
-  d3.select("#oceaniaColor").style("color", colors("oceania"));
+//   d3.select("#asiaColor").style("color", colors("asia"));
+//   d3.select("#africaColor").style("color", colors("africa"));
+//   d3.select("#northAmericaColor").style("color", colors("northAmerica"));
+//   d3.select("#southAmericaColor").style("color", colors("southAmerica"));
+//   d3.select("#europeColor").style("color", colors("europe"));
+//   d3.select("#oceaniaColor").style("color", colors("oceania"));
   
   let svg = d3.select(svgClass)
       .append("svg")
@@ -61,17 +62,24 @@ function  drawCoursesChart(svgClass) {
   // Create tooltip div and make it invisible
   let tooltip = d3.select("#svganchor").append("div")
       .attr("class", "tooltip")
-      .style("opacity", 0);
+      .style("opacity", 2);
   
   // Load and process data
   d3.csv("https://martinheinz.github.io/charts/data/who_suicide_stats.csv").then(function (data) {
   
-      let dataSet = data;
+      console.log(data)
+      let dataSet = books;
+
+      console.log(dataSet);
   
       // Set chart domain max value to the highest total value in data set
       xScale.domain(d3.extent(data, function (d) {
-          return +d.total;
+          return +d.year;
       }));
+
+
+
+
   
       redraw();
   
@@ -88,7 +96,7 @@ function  drawCoursesChart(svgClass) {
           redraw();
       });
   
-      // Listen to click on "scale" buttons and trigger redraw when they are clicked
+    //   Listen to click on "scale" buttons and trigger redraw when they are clicked
       d3.selectAll(".scale").on("click", function() {
           chartState.scale = this.value;
           redraw(chartState.measure);
@@ -107,6 +115,8 @@ function  drawCoursesChart(svgClass) {
           if (chartState.scale === Scales.log) {
               xScale = d3.scaleLog().range([ margin.left, width - margin.right ]);
           }
+          console.log(chartState.measure)
+          console.log("hhhhhh")
   
           xScale.domain(d3.extent(dataSet, function(d) {
               return +d[chartState.measure];
@@ -121,7 +131,7 @@ function  drawCoursesChart(svgClass) {
           }
           else {
               xAxis = d3.axisBottom(xScale)
-                  .ticks(10, ".1s")
+                  .ticks(10)
                   .tickSizeOuter(0);
           }
   
@@ -147,8 +157,8 @@ function  drawCoursesChart(svgClass) {
           }
   
           // Create country circles
-          let countriesCircles = svg.selectAll(".countries")
-              .data(dataSet, function(d) { return d.country });
+          let countriesCircles = svg.selectAll(".gender")
+              .data(dataSet, function(d) { return d.gender });
   
           countriesCircles.exit()
               .transition()
@@ -163,7 +173,7 @@ function  drawCoursesChart(svgClass) {
               .attr("cx", 0)
               .attr("cy", (height / 2) - margin.bottom / 2)
               .attr("r", 6)
-              .attr("fill", function(d){ return colors(d.continent)})
+              .attr("fill", function(d){ return colors(d.gender)})
               .merge(countriesCircles)
               .transition()
               .duration(2000)
@@ -172,6 +182,7 @@ function  drawCoursesChart(svgClass) {
   
           // Show tooltip when hovering over circle (data for respective country)
           d3.selectAll(".countries").on("mousemove", function(d) {
+              console.log(d);
               tooltip.html(`Country: <strong>${d.country}</strong><br>
                             ${chartState.legend.slice(0, chartState.legend.indexOf(","))}: 
                             <strong>${d3.format(",")(d[chartState.measure])}</strong>

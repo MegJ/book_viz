@@ -157,9 +157,9 @@
 
 		const requestData = async () => {
 			Promise.all([
-				d3.csv("courses.csv")
+				d3.csv("english_department_books.csv")
 			]).then(function(files) {
-				drawCoursesChart(".bookViz")
+				drawCoursesChart(".bookViz", files[0])
 			})
 		}
 		requestData();
