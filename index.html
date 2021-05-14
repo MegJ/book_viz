@@ -1,11 +1,11 @@
 <html>
 <head>
-	<title>English Departmen Visualization</title>
+	<title>Visualizing books and media assigned by the Cornell English Department</title>
 	<meta charset="UTF-8">
     <script src="https://d3js.org/d3.v6.min.js"></script>
+    <link rel="preconnect" href="https://fonts.gstatic.com">
 	<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
-	<link href="https://fonts.googleapis.com/css?family=Inconsolata&display=swap" rel="stylesheet">
-	<link href="https://fonts.googleapis.com/css?family=Montserrat:200,200i&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=PT+Serif:ital@0;1&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="general.css">
 	<script type="text/javascript" src="vis/book_viz.js"></script>
 
@@ -14,7 +14,8 @@
     <style type="text/css">
 
         body {
-            width:100%
+            width:100%;
+            font-family: ;
         }
 
         .centered {
@@ -40,6 +41,9 @@
         .scale-group {
             padding-left: 40px;
             display:inline;
+        }
+        #h4 {
+            font-size: 50;
         }
 
         button {
@@ -69,10 +73,23 @@
 
 </head>
 <body bgcolor = "#FBE9D8" style="text-align: center; margin-top: 50; color: #505050;">
-	<div style="max-width: 100%; margin: 0 auto; margin-bottom: 100; width: 800;font-family: Montserrat; font-size: 40; font-weight: bold; color: #505050; text-align: center;">
-		<h4 style="text-align: center;">Visualizing books in the english department</h4>
-        <!-- <select style="align: right" id="selectButton">Filter by... </select> -->
+	<div style="max-width: 100%; margin: 0 auto; margin-bottom: 100; width: 800; font-size: 40; font-weight: bold; color: #505050; text-align: center;">
+		<h4 style="text-align: center; font-size: 40; font-family: 'PT Serif', serif;">Visualizing books and media assigned by the Cornell English Department</h4>
 
+
+        <h4 style="text-align: left; font-size: 20">In the Spring of 2021, the department of Trustees at Cornell University approved a name change the English department.  The board voted to change the name from the department of English to the Department of Literatures in English, citing a desire to better reflect the department’s diverse fields of study.  </h4>
+
+        <h4 style="text-align: left; font-size: 20">Students reacted positively to the change. Concern persisted, however, about whether renaming would be part of a broader effort to decolonize English education, an effort that is taking place in departments across the country, or whether it would merely be another performative gesture.  I am an English major, and although I have taken many amazing and inspiring courses during my time here, I can count on one hand the number of works I have read by author’s from outside the United Kingdom or USA. </h4>
+
+        <h4 style="text-align: left; font-size: 20">We wanted to look at the books and media being assigned by English professors at Cornell.  To do this, we emailed every Professor teaching a course in Spring 2021, and we asked them to send us a copy of their syllabus.  We received over 30 syllabi with over 150 works between them.  </h4>
+
+		<h4 style="text-align: left; font-size: 20; font-weight: bold;">Contemporary Literature in the English</h4>
+
+        <h4 style="text-align: left; font-size: 20;">One of the major criticisms of Cornell’s English department is the pre-1800s requirement.  It was my own decision to take mostly courses covering pre-1800s literature during my time at Cornell, and I still treasure my Norton Shakespeare Anthology and copy of the Lais of Marie De France.  Most students, however, dread the requirement and criticize it for placing limits on the amount of diversity of works in the department. </h4>
+
+        <h4 style="text-align: left; font-size: 20; font">This graph shows when the books taught by the English department were published.</h4>
+
+        <!-- <select style="align: right" id="selectButton">Filter by... </select> -->
         <svg class="bookViz"></svg>
 		<div id="checkboxes" class="centered">
 			<span style="position:relative; top: 3px">Toggle Class Level:&nbsp;&nbsp;</span>
