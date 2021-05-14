@@ -1,13 +1,13 @@
 <html>
 <head>
-	<title>Data Vizualization</title>
+	<title>English Departmen Visualization</title>
 	<meta charset="UTF-8">
-	<script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3.v6.min.js"></script>
 	<script defer src="https://code.getmdl.io/1.3.0/material.min.js"></script>
 	<link href="https://fonts.googleapis.com/css?family=Inconsolata&display=swap" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/css?family=Montserrat:200,200i&display=swap" rel="stylesheet">
 	<link rel="stylesheet" href="general.css">
-	<script type="text/javascript" src="vis/courses_viz.js"></script>
+	<script type="text/javascript" src="vis/book_viz.js"></script>
 
     <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
     <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.blue_grey-amber.min.css" />
@@ -47,30 +47,9 @@
             display:block;
         }
 
-        .measure, .scale {
-        }
-
-        /* svg {
-            background-color: #FBE9D8;
-        } */
-
         .cells path {
             fill: none;
             pointer-events: all;
-        }
-
-        div.tooltip {
-            position: absolute;
-            text-align: left;
-            color: white;
-            white-space: normal;
-            padding: 6px;
-            font-size: 14px;
-            background: rgb(96,125,139);
-            border: 1px solid rgb(96,125,139);
-            border-radius: 2px;
-            pointer-events: none;
-            cursor: none;
         }
 
         .axis path,
@@ -83,39 +62,18 @@
         .axis text {
             font: 10px sans-serif;
         }
-
-        .continent {}
-
         .legend {
             fill: rgba(0,0,0,.87);
         }
-
-        .article {
-            position: fixed;
-            top: 20px;
-            left: 15px;
-            font-size: 35px;
-            color: rgb(96,125,139);
-        }
-
-        .article-tt {
-            font-size: 14px;
-            background: rgb(96,125,139);
-            border: 1px solid rgb(96,125,139);
-            border-radius: 2px;
-            pointer-events: none;
-        }
-
-
     </style>
 
 </head>
 <body bgcolor = "#FBE9D8" style="text-align: center; margin-top: 50; color: #505050;">
-	<div style="margin: 0 auto; width: 800;font-family: Montserrat; font-size: 40; font-weight: bold; color: #505050; text-align: center;">
+	<div style="max-width: 100%; margin: 0 auto; margin-bottom: 100; width: 800;font-family: Montserrat; font-size: 40; font-weight: bold; color: #505050; text-align: center;">
 		<h4 style="text-align: center;">Visualizing books in the english department</h4>
-        <select style="align: right" id="selectButton">Filter by... </select>
+        <!-- <select style="align: right" id="selectButton">Filter by... </select> -->
 
-        <svg height="500" width="800" class="bookViz"></svg>
+        <svg class="bookViz"></svg>
 		<div id="checkboxes" class="centered">
 			<span style="position:relative; top: 3px">Toggle Class Level:&nbsp;&nbsp;</span>
 			<label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect">
@@ -135,11 +93,6 @@
 				<span class="mdl-checkbox__label" id="color4000" style="font-size: 20px; color: #6C705E;">&#9679;&nbsp;&nbsp;</span>
 			</label>
 		</div>
-
-
-
-
-	
 	</div>
 	<script>
 		var darkTextColor = "#505050";
@@ -149,10 +102,12 @@
 		/** Functions for building data structures **/
 
 		const requestData = async () => {
+            // width = 800;
+            // height = 450;
 			Promise.all([
 				d3.csv("english_department_books.csv")
 			]).then(function(files) {
-				drawCoursesChart(".bookViz", files[0])
+				drawBookChart(".bookViz", files[0])
 			})
 		}
 		requestData();
