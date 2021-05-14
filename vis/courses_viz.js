@@ -1,10 +1,12 @@
 function  drawCoursesChart(svgClass, books) {
-  console.log("hi")
   let height = 400;
   let width = 800;
   let margin = ({top: 0, right: 120, bottom: 34, left: 40});
   
-  console.log(books);
+
+  books = books.filter(d => d.year != "");
+  books = congregate_duplicates(books);
+
   // Data structure describing chart scales
   let Scales = {
       lin: "scaleLinear",
@@ -61,7 +63,7 @@ function  drawCoursesChart(svgClass, books) {
 
 
   //create display legend
-  let genders = ["male", "female"]
+  let genders = ["male", "female", "none"]
 
   
   let legend = genders;
@@ -84,10 +86,13 @@ function  drawCoursesChart(svgClass, books) {
         if(d == "female"){
             filter_value = "female"
             redraw(false)
-        } else {
+        } else if(d == "male") {
             filter_value = "male"
 
             redraw(false)
+        } else {
+            filter_value = null;
+            redraw(false);
         }
     });
 
@@ -119,7 +124,6 @@ function  drawCoursesChart(svgClass, books) {
   
       let dataSet = books;
 
-      console.log(dataSet);
   
       // Set chart domain max value to the highest total value in data set
       xScale.domain(d3.extent(dataSet, function (d) {
@@ -228,7 +232,8 @@ function  drawCoursesChart(svgClass, books) {
               .attr("cx", 0)
               .attr("cy", (height / 2) - margin.bottom / 2)
               .attr("r", function(d) {return 6 * d.count})
-              .attr("fill", function(d){ 
+              .attr("fill", function(d){
+                  if(filter_value!= null){ 
 
                     if(d[filter_field] != filter_value){
                         return lightGreyColor;
@@ -237,6 +242,10 @@ function  drawCoursesChart(svgClass, books) {
                         class_level = class_level.substring(1, 2) + "000";
                           return colors(class_level)}
 
+                    } else {
+                        let class_level = d.course_number.substring(d.course_number.indexOf(" "));
+                        class_level = class_level.substring(1, 2) + "000";
+                          return colors(class_level)}
                     })
               .merge(countriesCircles)
               .transition()
@@ -248,7 +257,7 @@ function  drawCoursesChart(svgClass, books) {
           d3.selectAll(".books").on("mousemove", function(d) {
               let tooltipText = "<i>" + "<b>"+ d.title +"</b>"+ "</i><br />"+
                                 "author:  " + "<b>" + d.author + "</b><br />" +
-                                "course: <b>" + d.course_number + " " +  d.course_title + "<b><br />" +
+                                "course: <b>" + d.course_number + "<b><br />" +
                                 "year published: <b>" + d.year;
 
               updateToolTipText(tooltip, tooltipText, -20, 110);
@@ -312,6 +321,33 @@ function  drawCoursesChart(svgClass, books) {
   
 
     
+}
+
+function congregate_duplicates(books){
+    non_duplicated_list = [];
+    book_count = {};
+    title_to_index = {}
+    console.log(books.length);
+    for(let i = 0; i < books.length; i++){
+        if(!(books[i].title in book_count)){
+            book_count[books[i].title] = 1;
+            non_duplicated_list.push(books[i])
+            title_to_index[books[i].title] = non_duplicated_list.length - 1;
+        } else {
+            // console.log(title_to_index);
+            // console.log(title_to_index[books[i].title])
+            // console.log("hi")
+            book_count[books[i].title] += 1;
+            non_duplicated_list[title_to_index[books[i].title]].course_number =  
+            non_duplicated_list[title_to_index[books[i].title]].course_number + " & "+
+            books[i].course_number;
+        }
+    }
+    for(let i = 0; i < non_duplicated_list.length; i ++ ){
+        non_duplicated_list[i].count = book_count[non_duplicated_list[i].title];
+    }
+    return non_duplicated_list;
+
 }
 
 function addTooltipToVis(className) {
